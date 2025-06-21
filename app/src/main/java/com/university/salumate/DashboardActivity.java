@@ -31,7 +31,7 @@ public class DashboardActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 // Fixed context reference (DashboardActivity.this instead of MainActivity.this)
-                Intent intent = new Intent(DashboardActivity.this, CustomerActivity.class);
+                Intent intent = new Intent(DashboardActivity.this, CreateOrderActivity.class);
                 startActivity(intent);
             }
         });

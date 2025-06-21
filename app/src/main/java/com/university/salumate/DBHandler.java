@@ -169,6 +169,18 @@ public class DBHandler extends SQLiteOpenHelper {
         return db.query(TABLE_CUSTOMERS, null, "customer_id=?", new String[]{String.valueOf(customerId)}, null, null, null);
     }
 
-    // Add other CRUD methods similarly...
+    // Get customers to list view.
+    public Cursor getAllCustomers() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.query("CUSTOMERS", null, null, null, null, null, "name ASC");
+    }
+
+    //delete customer
+    public void deleteCustomer(long customerId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete("CUSTOMERS", "customer_id=?", new String[]{String.valueOf(customerId)});
+        db.close();
+    }
+
 
 }
