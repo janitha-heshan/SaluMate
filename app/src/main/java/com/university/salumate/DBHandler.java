@@ -60,11 +60,8 @@ public class DBHandler extends SQLiteOpenHelper {
                 "dress_name TEXT NOT NULL, " +
                 "estimated_time TEXT, " +
                 "estimated_price REAL, " +
-                "measurement_template_id INTEGER NOT NULL, " +
-                "created_by INTEGER, " +
                 "created_at TEXT DEFAULT CURRENT_TIMESTAMP, " +
-                "updated_at TEXT DEFAULT CURRENT_TIMESTAMP, " +
-                "FOREIGN KEY(measurement_template_id) REFERENCES " + TABLE_MEASUREMENT_TEMPLATES + "(measurement_template_id));";
+                "updated_at TEXT DEFAULT CURRENT_TIMESTAMP);";
 
         // Customers table (updated with latitude & longitude)
         String CREATE_CUSTOMERS = "CREATE TABLE " + TABLE_CUSTOMERS + " (" +
@@ -205,6 +202,25 @@ public class DBHandler extends SQLiteOpenHelper {
     public boolean deleteDress(long id) {
         SQLiteDatabase db = this.getWritableDatabase();
         return db.delete("DressTemplates", "dress_template_id=?", new String[]{String.valueOf(id)}) > 0;
+    }
+
+    // Get a single dress by ID
+    public Cursor getDressById(long id) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.rawQuery("SELECT * FROM DressTemplates WHERE dress_template_id=?", new String[]{String.valueOf(id)});
+    }
+
+    // Update a dress
+    public boolean updateDress(long id, String name, String time, double price) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("dress_name", name);
+        values.put("estimated_time", time);
+        values.put("estimated_price", price);
+        values.put("updated_at", String.valueOf(System.currentTimeMillis())); // Optional
+        int rows = db.update("DressTemplates", values, "dress_template_id=?", new String[]{String.valueOf(id)});
+        db.close();
+        return rows > 0;
     }
 
 

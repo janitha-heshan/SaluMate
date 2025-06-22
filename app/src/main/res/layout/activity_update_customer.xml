@@ -89,7 +89,7 @@
         app:layout_constraintTop_toBottomOf="@+id/editTextAddress" />
 
     <Button
-        android:id="@+id/btn_ConfirmCustomer"
+        android:id="@+id/btn_ConfirmDress"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
@@ -101,7 +101,7 @@
         app:layout_constraintVertical_bias="1.0" />
 
     <Button
-        android:id="@+id/btn_UpdateCustomer"
+        android:id="@+id/btn_BackDress"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
@@ -109,7 +109,7 @@
         android:textColorHighlight="@color/backblue"
         android:textColorLink="#A3C5E1"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/btn_ConfirmCustomer"
+        app:layout_constraintEnd_toStartOf="@+id/btn_ConfirmDress"
         app:layout_constraintHorizontal_bias="0.233"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/mapView"

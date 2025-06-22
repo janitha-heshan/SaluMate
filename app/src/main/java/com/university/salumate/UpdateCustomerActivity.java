@@ -6,11 +6,7 @@ import android.os.Bundle;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -59,8 +55,8 @@ public class UpdateCustomerActivity extends AppCompatActivity {
             });
         });
 
-        findViewById(R.id.btn_UpdateCustomer).setOnClickListener(v -> updateCustomerData());
-        findViewById(R.id.btn_ConfirmCustomer).setOnClickListener(v -> {
+        findViewById(R.id.btn_BackDress).setOnClickListener(v -> updateCustomerData());
+        findViewById(R.id.btn_ConfirmDress).setOnClickListener(v -> {
             Intent i = new Intent(UpdateCustomerActivity.this, DashboardActivity.class);
             i.putExtra("customer_id", customerId);
             startActivity(i);
