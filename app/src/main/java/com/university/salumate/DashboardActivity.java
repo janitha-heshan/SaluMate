@@ -25,13 +25,22 @@ public class DashboardActivity extends AppCompatActivity {
             return insets;
         });
 
-        // Moved inside onCreate() after setContentView()
+
         Button addCustomerButton = findViewById(R.id.addCustomer);
         addCustomerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // Fixed context reference (DashboardActivity.this instead of MainActivity.this)
                 Intent intent = new Intent(DashboardActivity.this, CreateOrderActivity.class);
+                startActivity(intent);
+            }
+        });
+        Button AllDressesButton = findViewById(R.id.btn_AllDresses);
+        AllDressesButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Fixed context reference (DashboardActivity.this instead of MainActivity.this)
+                Intent intent = new Intent(DashboardActivity.this, AllDressesActivity.class);
                 startActivity(intent);
             }
         });

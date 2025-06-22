@@ -196,5 +196,16 @@ public class DBHandler extends SQLiteOpenHelper {
         return rows > 0;
     }
 
+    //handling dresses UI
+    public Cursor getAllDresses() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.rawQuery("SELECT * FROM DressTemplates", null);
+    }
+
+    public boolean deleteDress(long id) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        return db.delete("DressTemplates", "dress_template_id=?", new String[]{String.valueOf(id)}) > 0;
+    }
+
 
 }
