@@ -1,5 +1,6 @@
 package com.university.salumate;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
@@ -80,6 +81,9 @@ public class CustomerActivity extends AppCompatActivity {
             } else {
                 Toast.makeText(this, "Failed to add customer.", Toast.LENGTH_SHORT).show();
             }
+
+            Intent intent = new Intent(CustomerActivity.this, CreateOrderActivity.class);
+            startActivity(intent);
         });
     }
 

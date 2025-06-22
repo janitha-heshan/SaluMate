@@ -181,6 +181,20 @@ public class DBHandler extends SQLiteOpenHelper {
         db.delete("CUSTOMERS", "customer_id=?", new String[]{String.valueOf(customerId)});
         db.close();
     }
+    //update customer
+    public boolean updateCustomer(long id, String name, String phone, String address, double lat, double lng) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("name", name);
+        values.put("phone_number", phone);
+        values.put("address", address);
+        values.put("latitude", lat);
+        values.put("longitude", lng);
+
+        int rows = db.update("Customers", values, "customer_id=?", new String[]{String.valueOf(id)});
+        db.close();
+        return rows > 0;
+    }
 
 
 }

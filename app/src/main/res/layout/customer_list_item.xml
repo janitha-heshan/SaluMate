@@ -22,17 +22,17 @@
         android:layout_height="wrap_content">
 
         <Button
-            android:id="@+id/btnEdit"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Edit" />
-
-        <Button
             android:id="@+id/btnDelete"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Delete" />
+
+        <Button
+            android:id="@+id/btnEdit"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Select" />
     </LinearLayout>
 </LinearLayout>
