@@ -12,10 +12,23 @@ import androidx.core.content.ContextCompat;
 
 import java.util.concurrent.Executor;
 
+/**
+ * MainActivity — Entry point of the SaluMate application.
+ *
+ * This activity displays the welcome / login screen and handles
+ * biometric (fingerprint) authentication before granting access
+ * to the main Dashboard. Authentication is triggered automatically
+ * on launch and can also be re-triggered via the login button.
+ */
 public class MainActivity extends AppCompatActivity {
 
+    /** Runs biometric callbacks on the main thread. */
     private Executor executor;
+
+    /** Android BiometricPrompt API handle. */
     private BiometricPrompt biometricPrompt;
+
+    /** Configuration metadata for the biometric dialog (title, subtitle, etc.) */
     private BiometricPrompt.PromptInfo promptInfo;
 
     @Override
@@ -23,10 +36,14 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Use the main (UI) thread executor so callbacks run on the UI thread
         executor = ContextCompat.getMainExecutor(this);
 
+        // Build the biometric prompt with its three possible callback outcomes
         biometricPrompt = new BiometricPrompt(MainActivity.this,
                 executor, new BiometricPrompt.AuthenticationCallback() {
+
+            /** Called when authentication encounters a non-recoverable error. */
             @Override
             public void onAuthenticationError(int errorCode,
                                               @NonNull CharSequence errString) {
@@ -35,19 +52,21 @@ public class MainActivity extends AppCompatActivity {
                         "Authentication error: " + errString, Toast.LENGTH_SHORT).show();
             }
 
+            /**
+             * Called on successful biometric verification.
+             * Navigates directly to the DashboardActivity and closes this screen
+             * so the user cannot navigate back to the login screen with the back key.
+             */
             @Override
             public void onAuthenticationSucceeded(
                     @NonNull BiometricPrompt.AuthenticationResult result) {
                 super.onAuthenticationSucceeded(result);
-                Toast.makeText(getApplicationContext(),
-                        "Authentication succeeded!", Toast.LENGTH_SHORT).show();
-
-                // ✅ Navigate to DashboardActivity
                 Intent intent = new Intent(MainActivity.this, DashboardActivity.class);
                 startActivity(intent);
-                finish(); // Optional: close MainActivity so user can't go back
+                finish(); // Removes MainActivity from the back-stack
             }
 
+            /** Called when a fingerprint is recognized but does not match. */
             @Override
             public void onAuthenticationFailed() {
                 super.onAuthenticationFailed();
@@ -56,16 +75,17 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        // Configure the biometric dialog presented to the user
         promptInfo = new BiometricPrompt.PromptInfo.Builder()
-                .setTitle("Biometric login for Salumate")
-                .setSubtitle("Log in using your fingerprint")
-                .setNegativeButtonText("Use account password")
+                .setTitle("Biometric Login — SaluMate")
+                .setSubtitle("Verify your fingerprint to continue")
+                .setNegativeButtonText("Cancel")
                 .build();
 
-        // Prompt fingerprint authentication immediately on UI launch
+        // Auto-prompt biometrics when the activity starts for a seamless UX
         biometricPrompt.authenticate(promptInfo);
 
-        // Also bind the new button
+        // The login button also re-triggers the biometric prompt if dismissed
         Button btnBiometrics = findViewById(R.id.btnBiometricLogin);
         if (btnBiometrics != null) {
             btnBiometrics.setOnClickListener(v -> biometricPrompt.authenticate(promptInfo));
