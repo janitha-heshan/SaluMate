@@ -35,7 +35,7 @@ public class UpdateDressActivity extends AppCompatActivity {
 
         // Get dress ID from Intent
         dressId = getIntent().getLongExtra("dress_id", -1);
-        Toast.makeText(this, " Fix Logic Dress ID : "+dressId, Toast.LENGTH_SHORT).show();
+
 
         if (dressId != -1) {
             loadDressDetails(dressId);

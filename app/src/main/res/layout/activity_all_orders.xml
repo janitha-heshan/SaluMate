@@ -2,16 +2,9 @@
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background_dark"
-    tools:context=".AllDressesActivity">
-
-    <!-- Hidden legacy IDs for Java binding compat -->
-    <TextView android:id="@+id/textView5" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
-    <TextView android:id="@+id/textView6" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
+    android:background="@color/background_dark">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
@@ -22,7 +15,7 @@
         <com.google.android.material.appbar.MaterialToolbar
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:title="Dress Templates"
+            app:title="All Orders"
             app:titleTextColor="@color/white"
             app:navigationIconTint="@color/white" />
     </com.google.android.material.appbar.AppBarLayout>
@@ -38,7 +31,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="DRESS CATALOGUE"
+            android:text="ORDER HISTORY"
             android:textColor="@color/text_secondary"
             android:textSize="11sp"
             android:letterSpacing="0.15"
@@ -47,7 +40,7 @@
             android:layout_marginBottom="12dp" />
 
         <ListView
-            android:id="@+id/listDresses"
+            android:id="@+id/listOrders"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
@@ -71,10 +64,10 @@
                 android:textColor="@color/text_secondary" />
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_NewCustomer"
+                android:id="@+id/btn_NewOrder"
                 android:layout_width="wrap_content"
                 android:layout_height="52dp"
-                android:text="+ New Dress"
+                android:text="+ New Order"
                 android:textStyle="bold"
                 app:backgroundTint="@color/primary"
                 app:cornerRadius="26dp" />

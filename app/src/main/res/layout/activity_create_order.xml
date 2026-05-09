@@ -1,67 +1,320 @@
-<?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+﻿<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/background_dark"
     tools:context=".CreateOrderActivity">
 
-    <TextView
-        android:id="@+id/textView5"
-        android:layout_width="413dp"
-        android:layout_height="45dp"
-        android:background="#092037"
-        android:padding="5dp"
-        android:paddingStart="5dp"
-        android:paddingLeft="5dp"
-        android:paddingTop="5dp"
-        android:paddingEnd="5dp"
-        android:paddingRight="5dp"
-        android:paddingBottom="5dp"
-        android:text="Create order"
-        android:textColor="#FDFBFB"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/textView6"
-        android:layout_width="wrap_content"
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:text="Select Cutomer from below or Create new one"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView5" />
+        android:background="@color/background_dark"
+        app:elevation="0dp">
 
-    <Button
-        android:id="@+id/btn_NewCustomer"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Crete New Customer"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.692"
-        app:layout_constraintStart_toEndOf="@+id/btn_BackToDashboard"
-        app:layout_constraintTop_toBottomOf="@+id/listView2" />
+        <com.google.android.material.appbar.MaterialToolbar
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:title="Create Order Wizard"
+            app:titleTextColor="@color/white" />
+    </com.google.android.material.appbar.AppBarLayout>
 
+    <!-- We maintain a dummy listview ID so that the ID bindings to old layout structure logic in java don't fail if they run before java update -->
     <ListView
         android:id="@+id/listView2"
-        android:layout_width="415dp"
-        android:layout_height="463dp"
-        android:layout_marginTop="36dp"
-        app:layout_constraintTop_toBottomOf="@+id/textView6"
-        tools:layout_editor_absoluteX="-1dp" />
-
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone" />
+    <Button
+        android:id="@+id/btn_NewCustomer"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone" />
     <Button
         android:id="@+id/btn_BackToDashboard"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="52dp"
-        android:text="Back"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/listView2" />
-</androidx.constraintlayout.widget.ConstraintLayout>
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone" />
+
+    <ViewFlipper
+        android:id="@+id/orderWizardFlipper"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <!-- STEP 1: CUSTOMER SELECTION -->
+        <ScrollView android:layout_width="match_parent" android:layout_height="match_parent">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="24dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Step 1: Select Customer"
+                    android:textColor="@color/primary_dark"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="24dp" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Customer"
+                    android:textColor="@color/text_secondary"
+                    android:layout_marginBottom="8dp" />
+                <Spinner
+                    android:id="@+id/spinnerOrderCustomer"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:layout_marginBottom="16dp"
+                    android:background="@drawable/ic_launcher_background"
+                    app:backgroundTint="@color/white" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Beneficiary (Optional)"
+                    android:textColor="@color/text_secondary"
+                    android:layout_marginBottom="8dp" />
+
+                <Spinner
+                    android:id="@+id/spinnerOrderBeneficiary"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:layout_marginBottom="16dp"
+                    android:background="@drawable/ic_launcher_background"
+                    app:backgroundTint="@color/white" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnAddNewBeneficiary"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:layout_marginBottom="32dp"
+                    android:text="+ Add New Beneficiary" />
+                
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="end"
+                    android:orientation="horizontal">
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnNextDress"
+                        android:layout_width="wrap_content"
+                        android:layout_height="60dp"
+                        android:text="Next ->"
+                        app:backgroundTint="@color/primary"
+                        app:cornerRadius="12dp" />
+                </LinearLayout>
+            </LinearLayout>
+        </ScrollView>
+
+        <!-- STEP 2: DRESS SELECTION -->
+        <ScrollView android:layout_width="match_parent" android:layout_height="match_parent">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="24dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Step 2: Select Dress"
+                    android:textColor="@color/primary_dark"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="24dp" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Dress Template"
+                    android:textColor="@color/text_secondary"
+                    android:layout_marginBottom="8dp" />
+                <Spinner
+                    android:id="@+id/spinnerOrderDress"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:layout_marginBottom="16dp"
+                    android:background="@drawable/ic_launcher_background"
+                    app:backgroundTint="@color/white" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnAddNewDress"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:layout_marginBottom="32dp"
+                    android:text="+ Create New Dress Template" />
+                
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="end"
+                    android:orientation="horizontal">
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnPrevCustomer"
+                        style="@style/Widget.Material3.Button.TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="60dp"
+                        android:layout_marginEnd="16dp"
+                        android:text="Back"
+                        android:textColor="@color/text_secondary" />
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnNextMeasurements"
+                        android:layout_width="wrap_content"
+                        android:layout_height="60dp"
+                        android:text="Next ->"
+                        app:backgroundTint="@color/primary"
+                        app:cornerRadius="12dp" />
+                </LinearLayout>
+            </LinearLayout>
+        </ScrollView>
+
+        <!-- STEP 3: MEASUREMENTS -->
+        <ScrollView android:layout_width="match_parent" android:layout_height="match_parent">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="24dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Step 3: Measurements"
+                    android:textColor="@color/primary_dark"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="16dp" />
+                
+                <LinearLayout
+                    android:id="@+id/orderMeasurementsContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginBottom="24dp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="end"
+                    android:orientation="horizontal">
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnPrevDress"
+                        style="@style/Widget.Material3.Button.TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="60dp"
+                        android:layout_marginEnd="16dp"
+                        android:text="Back"
+                        android:textColor="@color/text_secondary" />
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnNextPayment"
+                        android:layout_width="wrap_content"
+                        android:layout_height="60dp"
+                        android:text="Next ->"
+                        app:backgroundTint="@color/primary"
+                        app:cornerRadius="12dp" />
+                </LinearLayout>
+            </LinearLayout>
+        </ScrollView>
+
+        <!-- STEP 4: PAYMENT AND CONFIRMATION -->
+        <ScrollView android:layout_width="match_parent" android:layout_height="match_parent">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="24dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Step 4: Finalize Order"
+                    android:textColor="@color/primary_dark"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="24dp" />
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="24dp"
+                    app:cardBackgroundColor="@color/background_card"
+                    app:cardElevation="2dp"
+                    app:cardCornerRadius="12dp">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+                        <TextView
+                            android:id="@+id/txtOrderSummary"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textSize="16sp"
+                            android:textColor="@color/primary_dark"
+                            android:text="Summary will appear here" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Advance Payment"
+                    android:layout_marginBottom="32dp"
+                    app:boxStrokeColor="@color/primary"
+                    app:prefixText="LKR">
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/editAdvancePayment"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="numberDecimal" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Due Date (YYYY-MM-DD)"
+                    android:layout_marginBottom="32dp"
+                    app:boxStrokeColor="@color/primary">
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/editDueDate"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:focusable="false"
+                        android:cursorVisible="false"
+                        android:clickable="true"
+                        android:inputType="date" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="end"
+                    android:orientation="horizontal">
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnPrevMeasurements"
+                        style="@style/Widget.Material3.Button.TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="60dp"
+                        android:layout_marginEnd="16dp"
+                        android:text="Back"
+                        android:textColor="@color/text_secondary" />
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnPlaceOrder"
+                        android:layout_width="wrap_content"
+                        android:layout_height="60dp"
+                        android:text="Place Order ->"
+                        app:backgroundTint="@color/secondary"
+                        app:cornerRadius="12dp" />
+                </LinearLayout>
+            </LinearLayout>
+        </ScrollView>
+
+    </ViewFlipper>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
+

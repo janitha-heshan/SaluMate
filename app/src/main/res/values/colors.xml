@@ -1,9 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Base -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="themeblue">#092037</color>
-    <color name="successblue">#339AF0</color>
-    <color name="backblue">#A3C5E1</color>
 
+    <!--
+        Luxury Fabric Palette inspired by premium tailor materials:
+        • Background  → Rich Charcoal (dark wool suiting)
+        • Cards       → Warm Espresso Dark (cashmere)
+        • Primary     → Deep Burgundy Wine (velvet fabric)
+        • Secondary   → Antique Champagne Gold (brocade thread)
+        • Tertiary    → Dusty Rose Mauve (silk blush)
+        • Text        → Ivory Cream (fine linen)
+    -->
+
+    <!-- Backgrounds -->
+    <color name="background_dark">#1A1614</color>      <!-- Warm Charcoal / dark wool -->
+    <color name="background_card">#261E1C</color>      <!-- Espresso cashmere depth -->
+    <color name="background_light">#F5EDD6</color>     <!-- Ivory linen (light mode) -->
+    <color name="surface_elevated">#32251F</color>     <!-- Warm mahogany mid-tone -->
+    <color name="primary_surface">#3D1526</color>      <!-- Deep velvet tint layer -->
+
+    <!-- Primary: Deep Burgundy Velvet -->
+    <color name="primary">#91203D</color>
+    <color name="primary_dark">#5C0E24</color>
+    <color name="primary_light">#C45975</color>
+
+    <!-- Secondary: Antique Champagne Gold / Brocade -->
+    <color name="secondary">#C4963A</color>
+    <color name="secondary_dark">#8C6820</color>
+    <color name="secondary_light">#E2C278</color>
+
+    <!-- Tertiary: Silk Blush / Dusty Mauve -->
+    <color name="tertiary">#C08080</color>
+
+    <!-- Semantic -->
+    <color name="success">#4CAF7D</color>
+    <color name="error">#CF4444</color>
+    <color name="warning">#E6A817</color>
+
+    <!-- Text: Ivory / Cream tones on dark -->
+    <color name="text_primary">#F0E8DC</color>         <!-- Warm ivory cream -->
+    <color name="text_secondary">#A89880</color>       <!-- Aged parchment -->
+    <color name="text_on_primary">#FFFFFF</color>
+    <color name="text_dark">#1A1614</color>
+
+    <!-- Dividers -->
+    <color name="divider">#3A2E28</color>
 </resources>

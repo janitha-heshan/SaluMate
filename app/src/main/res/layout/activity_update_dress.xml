@@ -1,105 +1,143 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/background_dark"
     tools:context=".UpdateDressActivity">
 
-    <TextView
-    android:id="@+id/textView"
-    android:layout_width="413dp"
-    android:layout_height="45dp"
-    android:background="#092037"
-    android:padding="5dp"
-    android:paddingStart="5dp"
-    android:paddingLeft="5dp"
-    android:paddingTop="5dp"
-    android:paddingEnd="5dp"
-    android:paddingRight="5dp"
-    android:paddingBottom="5dp"
-    android:text="Update Dress"
-    android:textColor="#FDFBFB"
-    android:textSize="24sp"
-    android:textStyle="bold"
-    app:layout_constraintEnd_toEndOf="parent"
-    app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintTop_toTopOf="parent" />
+    <!-- Legacy IDs for compat -->
+    <TextView android:id="@+id/textView"  android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
+    <TextView android:id="@+id/textView4" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
 
-
-    <EditText
-        android:id="@+id/txt_UpdateDressName"
-        android:layout_width="319dp"
-        android:layout_height="43dp"
-        android:layout_marginTop="32dp"
-        android:ems="10"
-        android:hint="Dress Name"
-        android:inputType="text"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView4" />
-
-    <Button
-        android:id="@+id/btn_UpdateConfirmDress"
-        android:layout_width="wrap_content"
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="36dp"
-        android:text="Confirm"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/txtDecimal_UpdateEstimatedprice"
-        app:layout_constraintVertical_bias="1.0" />
+        android:background="@color/background_dark"
+        app:elevation="0dp">
 
-    <Button
-        android:id="@+id/btn_UpdateBackDress"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Back"
-        android:textColorHighlight="@color/backblue"
-        android:textColorLink="#A3C5E1"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/btn_UpdateConfirmDress"
-        app:layout_constraintHorizontal_bias="0.233"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/txtDecimal_Estimatedprice"
-        app:layout_constraintVertical_bias="1.0" />
+        <com.google.android.material.appbar.MaterialToolbar
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:title="Update Dress Template"
+            app:titleTextColor="@color/text_primary"
+            app:navigationIconTint="@color/text_primary" />
+    </com.google.android.material.appbar.AppBarLayout>
 
-    <TextView
-        android:id="@+id/textView4"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Create Dress Template"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView" />
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-    <EditText
-        android:id="@+id/txtNumber_UpdateNumberofDays"
-        android:layout_width="319dp"
-        android:layout_height="45dp"
-        android:layout_marginTop="36dp"
-        android:ems="10"
-        android:hint="Number Of Days"
-        android:inputType="number"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/txt_UpdateDressName" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
 
-    <EditText
-        android:id="@+id/txtDecimal_UpdateEstimatedprice"
-        android:layout_width="319dp"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:hint="Price xxxxx.xx"
-        android:inputType="numberDecimal"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/txtNumber_UpdateNumberofDays"
-        app:layout_constraintVertical_bias="0.077" />
+            <!-- Section label -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="DRESS DETAILS"
+                android:textColor="@color/text_secondary"
+                android:textSize="11sp"
+                android:letterSpacing="0.15"
+                android:textStyle="bold"
+                android:layout_marginBottom="16dp" />
 
+            <!-- Dress Name -->
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Dress Name"
+                android:layout_marginBottom="16dp"
+                app:boxStrokeColor="@color/primary"
+                app:boxBackgroundColor="@color/background_card"
+                app:hintTextColor="@color/primary_light">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/txt_UpdateDressName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textCapWords"
+                    android:textColor="@color/primary"
+                    android:textColorHint="@color/text_secondary" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Estimated Days -->
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Estimated Completion (Days)"
+                android:layout_marginBottom="16dp"
+                app:boxStrokeColor="@color/primary"
+                app:boxBackgroundColor="@color/background_card"
+                app:hintTextColor="@color/primary_light">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/txtNumber_UpdateNumberofDays"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="number"
+                    android:textColor="@color/primary"
+                    android:textColorHint="@color/text_secondary" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Estimated Price -->
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Estimated Price"
+                android:layout_marginBottom="32dp"
+                app:boxStrokeColor="@color/primary"
+                app:boxBackgroundColor="@color/background_card"
+                app:hintTextColor="@color/primary_light"
+                app:prefixText="LKR "
+                app:prefixTextColor="@color/secondary">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/txtDecimal_UpdateEstimatedprice"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="numberDecimal"
+                    android:textColor="@color/primary"
+                    android:textColorHint="@color/text_secondary" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Action Buttons -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="end">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_UpdateBackDress"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="52dp"
+                    android:layout_marginEnd="12dp"
+                    android:text="Cancel"
+                    android:textColor="@color/text_secondary" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_UpdateConfirmDress"
+                    android:layout_width="wrap_content"
+                    android:layout_height="52dp"
+                    android:text="Save Changes"
+                    android:textColor="@color/black"
+                    android:textStyle="bold"
+                    app:backgroundTint="@color/secondary"
+                    app:cornerRadius="26dp" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -9,7 +9,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class DBHandler extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "salumate.db";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 5;
 
     // Table Names
     private static final String TABLE_USERS = "Users";
@@ -19,6 +19,7 @@ public class DBHandler extends SQLiteOpenHelper {
     private static final String TABLE_CUSTOMERS = "Customers";
     private static final String TABLE_BENEFICIARIES = "Beneficiaries";
     private static final String TABLE_ORDERS = "Orders";
+    private static final String TABLE_ORDER_ITEMS = "OrderItems";
     private static final String TABLE_ORDER_MEASUREMENTS = "OrderMeasurements";
     private static final String TABLE_REFERENCE_IMAGES = "ReferenceImages";
 
@@ -60,6 +61,7 @@ public class DBHandler extends SQLiteOpenHelper {
                 "dress_name TEXT NOT NULL, " +
                 "estimated_time TEXT, " +
                 "estimated_price REAL, " +
+                "measurement_template_id INTEGER, " +
                 "created_at TEXT DEFAULT CURRENT_TIMESTAMP, " +
                 "updated_at TEXT DEFAULT CURRENT_TIMESTAMP);";
 
@@ -85,8 +87,6 @@ public class DBHandler extends SQLiteOpenHelper {
         String CREATE_ORDERS = "CREATE TABLE " + TABLE_ORDERS + " (" +
                 "order_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 "customer_id INTEGER NOT NULL, " +
-                "beneficiary_id INTEGER, " +
-                "dress_template_id INTEGER NOT NULL, " +
                 "total_price REAL, " +
                 "paid_amount REAL, " +
                 "payment_due REAL, " +
@@ -94,24 +94,34 @@ public class DBHandler extends SQLiteOpenHelper {
                 "order_status TEXT, " +
                 "created_at TEXT DEFAULT CURRENT_TIMESTAMP, " +
                 "updated_at TEXT DEFAULT CURRENT_TIMESTAMP, " +
-                "FOREIGN KEY(customer_id) REFERENCES " + TABLE_CUSTOMERS + "(customer_id), " +
+                "FOREIGN KEY(customer_id) REFERENCES " + TABLE_CUSTOMERS + "(customer_id));";
+
+        // OrderItems table
+        String CREATE_ORDER_ITEMS = "CREATE TABLE " + TABLE_ORDER_ITEMS + " (" +
+                "order_item_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "order_id INTEGER NOT NULL, " +
+                "beneficiary_id INTEGER, " +
+                "dress_template_id INTEGER NOT NULL, " +
+                "price REAL, " +
+                "FOREIGN KEY(order_id) REFERENCES " + TABLE_ORDERS + "(order_id), " +
                 "FOREIGN KEY(beneficiary_id) REFERENCES " + TABLE_BENEFICIARIES + "(beneficiary_id), " +
                 "FOREIGN KEY(dress_template_id) REFERENCES " + TABLE_DRESS_TEMPLATES + "(dress_template_id));";
 
         // OrderMeasurements table
         String CREATE_ORDER_MEASUREMENTS = "CREATE TABLE " + TABLE_ORDER_MEASUREMENTS + " (" +
                 "order_measurement_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                "order_id INTEGER NOT NULL, " +
+                "order_item_id INTEGER NOT NULL, " +
                 "field_id INTEGER NOT NULL, " +
                 "value REAL, " +
-                "FOREIGN KEY(order_id) REFERENCES " + TABLE_ORDERS + "(order_id), " +
+                "FOREIGN KEY(order_item_id) REFERENCES " + TABLE_ORDER_ITEMS + "(order_item_id), " +
                 "FOREIGN KEY(field_id) REFERENCES " + TABLE_MEASUREMENT_FIELDS + "(field_id));";
 
         // ReferenceImages table
         String CREATE_REFERENCE_IMAGES = "CREATE TABLE " + TABLE_REFERENCE_IMAGES + " (" +
                 "image_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 "order_id INTEGER NOT NULL, " +
-                "image_url TEXT NOT NULL, " +
+                "image_path TEXT NOT NULL, " +
+                "notes TEXT, " +
                 "uploaded_at TEXT DEFAULT CURRENT_TIMESTAMP, " +
                 "FOREIGN KEY(order_id) REFERENCES " + TABLE_ORDERS + "(order_id));";
 
@@ -123,6 +133,7 @@ public class DBHandler extends SQLiteOpenHelper {
         db.execSQL(CREATE_CUSTOMERS);
         db.execSQL(CREATE_BENEFICIARIES);
         db.execSQL(CREATE_ORDERS);
+        db.execSQL(CREATE_ORDER_ITEMS);
         db.execSQL(CREATE_ORDER_MEASUREMENTS);
         db.execSQL(CREATE_REFERENCE_IMAGES);
     }
@@ -132,6 +143,7 @@ public class DBHandler extends SQLiteOpenHelper {
         // Drop all tables on upgrade for simplicity
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_REFERENCE_IMAGES);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_ORDER_MEASUREMENTS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_ORDER_ITEMS);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_ORDERS);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_BENEFICIARIES);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_CUSTOMERS);

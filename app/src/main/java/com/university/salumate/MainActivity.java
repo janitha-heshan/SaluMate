@@ -3,6 +3,7 @@ package com.university.salumate;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Toast;
+import android.widget.Button;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -61,7 +62,13 @@ public class MainActivity extends AppCompatActivity {
                 .setNegativeButtonText("Use account password")
                 .build();
 
-        // 👆 Prompt fingerprint authentication immediately on UI launch
+        // Prompt fingerprint authentication immediately on UI launch
         biometricPrompt.authenticate(promptInfo);
+
+        // Also bind the new button
+        Button btnBiometrics = findViewById(R.id.btnBiometricLogin);
+        if (btnBiometrics != null) {
+            btnBiometrics.setOnClickListener(v -> biometricPrompt.authenticate(promptInfo));
+        }
     }
 }

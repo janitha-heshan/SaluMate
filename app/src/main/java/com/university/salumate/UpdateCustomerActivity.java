@@ -4,6 +4,10 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Button;
+import android.view.ViewGroup;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -22,6 +26,7 @@ public class UpdateCustomerActivity extends AppCompatActivity {
     private LatLng customerLocation;
     private long customerId;
     private DBHandler dbHandler;
+    private LinearLayout layoutBeneficiaries;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +41,7 @@ public class UpdateCustomerActivity extends AppCompatActivity {
 
         customerId = getIntent().getLongExtra("customer_id", -1);
         mapView.onCreate(savedInstanceState);
+        layoutBeneficiaries = findViewById(R.id.layoutBeneficiaries);
 
         if (customerId != -1) {
             loadCustomerData(customerId);
@@ -55,12 +61,31 @@ public class UpdateCustomerActivity extends AppCompatActivity {
             });
         });
 
-        findViewById(R.id.btn_BackDress).setOnClickListener(v -> updateCustomerData());
+        findViewById(R.id.btn_BackDress).setOnClickListener(v -> {
+            updateCustomerData();
+            finish();
+        });
         findViewById(R.id.btn_ConfirmDress).setOnClickListener(v -> {
             Intent i = new Intent(UpdateCustomerActivity.this, DashboardActivity.class);
-            i.putExtra("customer_id", customerId);
+            i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(i);
         });
+        
+        findViewById(R.id.btnAddBeneficiary).setOnClickListener(v -> {
+            Intent intent = new Intent(UpdateCustomerActivity.this, BeneficiaryActivity.class);
+            intent.putExtra("customer_id", customerId);
+            intent.putExtra("standalone", true);
+            startActivity(intent);
+        });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mapView.onResume();
+        if (customerId != -1) {
+            loadBeneficiaries();
+        }
     }
 
     private void loadCustomerData(long id) {
@@ -75,6 +100,42 @@ public class UpdateCustomerActivity extends AppCompatActivity {
             customerLocation = new LatLng(lat, lng);
 
             cursor.close();
+            loadBeneficiaries();
+        }
+    }
+
+    private void loadBeneficiaries() {
+        layoutBeneficiaries.removeAllViews();
+        Cursor cur = dbHandler.getReadableDatabase().rawQuery("SELECT beneficiary_id, name, gender, relation FROM Beneficiaries WHERE customer_id = ?", new String[]{String.valueOf(customerId)});
+        if (cur != null && cur.moveToFirst()) {
+            do {
+                long bId = cur.getLong(0);
+                String bName = cur.getString(1);
+                String bRel = cur.getString(3);
+                
+                LinearLayout row = new LinearLayout(this);
+                row.setOrientation(LinearLayout.HORIZONTAL);
+                row.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                row.setPadding(0, 16, 0, 16);
+                
+                TextView txtInfo = new TextView(this);
+                txtInfo.setText(bName + " (" + bRel + ")");
+                txtInfo.setTextSize(16);
+                txtInfo.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
+                
+                Button btnDel = new Button(this);
+                btnDel.setText("Del");
+                btnDel.setOnClickListener(v -> {
+                    dbHandler.getWritableDatabase().execSQL("DELETE FROM Beneficiaries WHERE beneficiary_id = ?", new String[]{String.valueOf(bId)});
+                    loadBeneficiaries();
+                });
+                
+                row.addView(txtInfo);
+                row.addView(btnDel);
+                layoutBeneficiaries.addView(row);
+                
+            } while (cur.moveToNext());
+            cur.close();
         }
     }
 
@@ -95,8 +156,6 @@ public class UpdateCustomerActivity extends AppCompatActivity {
     }
 
     // Required lifecycle methods for MapView
-    @Override protected void onResume() { super.onResume(); mapView.onResume(); }
-    @Override protected void onPause() { super.onPause(); mapView.onPause(); }
     @Override protected void onDestroy() { super.onDestroy(); mapView.onDestroy(); }
     //@Override public void onLowMemory() { super.onLowMemory(); mapView.onLowMemory(); }
 }
