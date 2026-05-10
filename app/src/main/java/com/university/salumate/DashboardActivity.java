@@ -67,6 +67,12 @@ public class DashboardActivity extends AppCompatActivity {
         btnCustomers.setOnClickListener(v -> {
             startActivity(new Intent(DashboardActivity.this, AllCustomersActivity.class));
         });
+
+        // "Measurement Templates" quick-action tile
+        View btnTemplates = findViewById(R.id.btn_MeasurementTemplates);
+        btnTemplates.setOnClickListener(v -> {
+            startActivity(new Intent(DashboardActivity.this, AllMeasurementTemplatesActivity.class));
+        });
     }
 
     /**
