@@ -577,6 +577,7 @@ public class OrderDetailsActivity extends AppCompatActivity {
                 long   imageId = c.getLong(0);
                 String path    = c.getString(1);
                 String notes   = c.getString(2);
+                String noteTitle = (notes != null && !notes.trim().isEmpty()) ? notes : "Reference Image";
 
                 // Build a horizontal row: thumbnail | notes text | edit/delete buttons
                 LinearLayout row = new LinearLayout(this);
@@ -586,12 +587,16 @@ public class OrderDetailsActivity extends AppCompatActivity {
                         android.view.ViewGroup.LayoutParams.WRAP_CONTENT));
                 row.setPadding(0, 16, 0, 16);
 
-                // Thumbnail image (150×150 dp, center-cropped)
+                // Thumbnail image (150×150, center-cropped, clickable)
                 android.widget.ImageView img = new android.widget.ImageView(this);
-                img.setLayoutParams(new LinearLayout.LayoutParams(150, 150));
+                int thumbPx = (int) (120 * getResources().getDisplayMetrics().density);
+                img.setLayoutParams(new LinearLayout.LayoutParams(thumbPx, thumbPx));
                 img.setScaleType(android.widget.ImageView.ScaleType.CENTER_CROP);
                 try { img.setImageURI(android.net.Uri.parse(path)); }
-                catch (Exception ignored) { /* image no longer accessible — show broken state */ }
+                catch (Exception ignored) { }
+
+                // Tap thumbnail → open fullscreen popup with note title
+                img.setOnClickListener(v -> showImagePopup(path, noteTitle));
 
                 // Notes text column
                 LinearLayout textCol = new LinearLayout(this);
@@ -615,7 +620,6 @@ public class OrderDetailsActivity extends AppCompatActivity {
                 Button btnDel = new Button(this);
                 btnDel.setText("✕");
                 btnDel.setOnClickListener(v -> {
-                    // Remove the image record and refresh the image gallery section
                     dbHandler.getWritableDatabase().execSQL(
                             "DELETE FROM ReferenceImages WHERE image_id = ?",
                             new String[]{String.valueOf(imageId)});
@@ -634,6 +638,33 @@ public class OrderDetailsActivity extends AppCompatActivity {
             c.close();
         }
     }
+
+    /**
+     * Opens a fullscreen AlertDialog showing the reference image at full size,
+     * with the associated note displayed as the dialog title.
+     *
+     * @param imagePath URI string of the image file.
+     * @param noteTitle The note/title text associated with this image.
+     */
+    private void showImagePopup(String imagePath, String noteTitle) {
+        android.widget.ImageView fullImg = new android.widget.ImageView(this);
+        fullImg.setLayoutParams(new android.view.ViewGroup.LayoutParams(
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                android.view.ViewGroup.LayoutParams.WRAP_CONTENT));
+        fullImg.setScaleType(android.widget.ImageView.ScaleType.FIT_CENTER);
+        fullImg.setAdjustViewBounds(true);
+        int paddingPx = (int) (16 * getResources().getDisplayMetrics().density);
+        fullImg.setPadding(paddingPx, paddingPx, paddingPx, paddingPx);
+        try { fullImg.setImageURI(android.net.Uri.parse(imagePath)); }
+        catch (Exception ignored) { }
+
+        new android.app.AlertDialog.Builder(this)
+                .setTitle(noteTitle)
+                .setView(fullImg)
+                .setPositiveButton("Close", null)
+                .show();
+    }
+
 
     /**
      * Shows a dialog prompting the user to enter optional notes for a newly

@@ -497,7 +497,13 @@ public class CreateOrderActivity extends AppCompatActivity {
 
             db.setTransactionSuccessful();
             Toast.makeText(this, "Order placed successfully!", Toast.LENGTH_SHORT).show();
-            finish(); // Return to caller (dashboard or order list)
+
+            // Navigate directly to the new order's detail screen
+            Intent intent = new Intent(this, OrderDetailsActivity.class);
+            intent.putExtra("order_id", orderId);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+            finish(); // Close the wizard so back-press returns to the order list
 
         } catch (Exception e) {
             Toast.makeText(this, "Failed to place order: " + e.getMessage(),
