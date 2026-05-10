@@ -9,11 +9,11 @@
     android:background="@color/background_dark"
     tools:context=".MainActivity">
 
-    <!-- Burgundy velvet glow behind the logo -->
+    <!-- Cyan accent glow behind the logo -->
     <View
         android:layout_width="match_parent"
         android:layout_height="320dp"
-        android:background="#1A91203D"
+        android:background="@color/primary_surface"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>

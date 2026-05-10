@@ -143,6 +143,11 @@ public class OrderDetailsActivity extends AppCompatActivity {
         });
     }
 
+    private String customerPhone = "";
+    private String customerAddress = "";
+    private double customerLat = 0.0;
+    private double customerLng = 0.0;
+
     // ─────────────────────────────────────────────────────────────────────────
     // Data Loading
     // ─────────────────────────────────────────────────────────────────────────
@@ -155,7 +160,7 @@ public class OrderDetailsActivity extends AppCompatActivity {
     private void loadOrderDetails() {
         Cursor cursor = dbHandler.getReadableDatabase().rawQuery(
                 "SELECT o.order_id, c.name, o.total_price, o.paid_amount, " +
-                "o.order_status, o.customer_id " +
+                "o.order_status, o.customer_id, c.phone_number, c.address, c.latitude, c.longitude " +
                 "FROM Orders o " +
                 "JOIN Customers c ON o.customer_id = c.customer_id " +
                 "WHERE o.order_id = ?",
@@ -167,6 +172,10 @@ public class OrderDetailsActivity extends AppCompatActivity {
             double advance      = cursor.getDouble(3);
             currentStatus       = cursor.getString(4);
             customerId          = cursor.getLong(5);
+            customerPhone       = cursor.getString(6);
+            customerAddress     = cursor.getString(7);
+            if (!cursor.isNull(8)) customerLat = cursor.getDouble(8); else customerLat = 0.0;
+            if (!cursor.isNull(9)) customerLng = cursor.getDouble(9); else customerLng = 0.0;
             double balance      = total - advance; // Remaining payment due
 
             txtOrderTitle.setText("Order #" + orderId);
@@ -175,6 +184,63 @@ public class OrderDetailsActivity extends AppCompatActivity {
             txtOrderFinancials.setText(String.format(
                     "Total: LKR %.2f\nAdvance Paid: LKR %.2f\nBalance Due: LKR %.2f",
                     total, advance, balance));
+
+            TextView txtLocation = findViewById(R.id.txtOrderCustomerLocation);
+            if (customerAddress != null && !customerAddress.trim().isEmpty()) {
+                txtLocation.setText("Location: " + customerAddress);
+            } else if (customerLat != 0.0 && customerLng != 0.0) {
+                txtLocation.setText("Location: GPS coordinates saved");
+            } else {
+                txtLocation.setText("Location: Unavailable");
+            }
+
+            android.widget.ImageButton btnActionMaps = findViewById(R.id.btnActionMaps);
+            android.widget.ImageButton btnActionWhatsApp = findViewById(R.id.btnActionWhatsApp);
+            android.widget.ImageButton btnActionCall = findViewById(R.id.btnActionCall);
+            android.widget.ImageButton btnActionMessage = findViewById(R.id.btnActionMessage);
+
+            btnActionMaps.setOnClickListener(v -> {
+                if (customerLat != 0.0 && customerLng != 0.0) {
+                    android.net.Uri gmmIntentUri = android.net.Uri.parse("google.navigation:q=" + customerLat + "," + customerLng);
+                    android.content.Intent mapIntent = new android.content.Intent(android.content.Intent.ACTION_VIEW, gmmIntentUri);
+                    mapIntent.setPackage("com.google.android.apps.maps");
+                    if (mapIntent.resolveActivity(getPackageManager()) != null) {
+                        startActivity(mapIntent);
+                    } else {
+                        startActivity(new android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse("https://maps.google.com/?daddr=" + customerLat + "," + customerLng)));
+                    }
+                } else if (customerAddress != null && !customerAddress.trim().isEmpty()) {
+                    android.net.Uri gmmIntentUri = android.net.Uri.parse("geo:0,0?q=" + android.net.Uri.encode(customerAddress));
+                    android.content.Intent mapIntent = new android.content.Intent(android.content.Intent.ACTION_VIEW, gmmIntentUri);
+                    startActivity(mapIntent);
+                } else {
+                    Toast.makeText(this, "No location data available.", Toast.LENGTH_SHORT).show();
+                }
+            });
+
+            btnActionWhatsApp.setOnClickListener(v -> {
+                if (customerPhone == null || customerPhone.trim().isEmpty()) {
+                    Toast.makeText(this, "No phone number available.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                startActivity(new android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse("https://api.whatsapp.com/send?phone=" + customerPhone)));
+            });
+
+            btnActionCall.setOnClickListener(v -> {
+                if (customerPhone == null || customerPhone.trim().isEmpty()) {
+                    Toast.makeText(this, "No phone number available.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                startActivity(new android.content.Intent(android.content.Intent.ACTION_DIAL, android.net.Uri.parse("tel:" + customerPhone)));
+            });
+
+            btnActionMessage.setOnClickListener(v -> {
+                if (customerPhone == null || customerPhone.trim().isEmpty()) {
+                    Toast.makeText(this, "No phone number available.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                startActivity(new android.content.Intent(android.content.Intent.ACTION_SENDTO, android.net.Uri.parse("smsto:" + customerPhone)));
+            });
 
             cursor.close();
             loadOrderItems(); // Refresh the line items below the header
@@ -190,9 +256,10 @@ public class OrderDetailsActivity extends AppCompatActivity {
         LinearLayout layoutOrderItems = findViewById(R.id.layoutOrderItems);
         layoutOrderItems.removeAllViews(); // Clear before re-populating
 
+        android.database.sqlite.SQLiteDatabase db = dbHandler.getReadableDatabase();
         // JOIN with DressTemplates and Beneficiaries to get human-readable names
-        Cursor c = dbHandler.getReadableDatabase().rawQuery(
-                "SELECT oi.order_item_id, d.dress_name, b.name, oi.price " +
+        Cursor c = db.rawQuery(
+                "SELECT oi.order_item_id, d.dress_name, b.name, oi.price, d.measurement_template_id " +
                 "FROM OrderItems oi " +
                 "JOIN DressTemplates d ON oi.dress_template_id = d.dress_template_id " +
                 "LEFT JOIN Beneficiaries b ON oi.beneficiary_id = b.beneficiary_id " +
@@ -206,8 +273,38 @@ public class OrderDetailsActivity extends AppCompatActivity {
                 String ben    = c.getString(2);
                 if (ben == null) ben = "Primary Customer"; // NULL beneficiary = order is for the customer directly
                 double price  = c.getDouble(3);
+                long measurementTemplateId = c.getLong(4);
 
-                // Build a horizontal row: text info on the left, delete button on the right
+                // Fetch Measurements
+                StringBuilder measurementsText = new StringBuilder();
+                Cursor mCursor = db.rawQuery(
+                    "SELECT mf.field_name, om.value, mf.unit " +
+                    "FROM MeasurementFields mf " +
+                    "LEFT JOIN OrderMeasurements om ON mf.field_id = om.field_id AND om.order_item_id = ? " +
+                    "WHERE mf.measurement_template_id = ?",
+                    new String[]{String.valueOf(itemId), String.valueOf(measurementTemplateId)});
+
+                boolean hasMeasurements = false;
+                if (mCursor != null && mCursor.moveToFirst()) {
+                    do {
+                        String fieldName = mCursor.getString(0);
+                        if (!mCursor.isNull(1)) {
+                            double value = mCursor.getDouble(1);
+                            String unit = mCursor.getString(2);
+                            if (unit == null) unit = "";
+                            if (measurementsText.length() > 0) measurementsText.append(", ");
+                            measurementsText.append(fieldName).append(": ").append(value).append(unit);
+                            hasMeasurements = true;
+                        }
+                    } while (mCursor.moveToNext());
+                    mCursor.close();
+                }
+
+                if (!hasMeasurements) {
+                    measurementsText.append("No measurements added");
+                }
+
+                // Build a horizontal row: text info on the left, buttons on the right
                 LinearLayout row = new LinearLayout(this);
                 row.setOrientation(LinearLayout.HORIZONTAL);
                 row.setLayoutParams(new LinearLayout.LayoutParams(
@@ -216,17 +313,29 @@ public class OrderDetailsActivity extends AppCompatActivity {
                 row.setPadding(0, 16, 0, 16);
 
                 TextView txtInfo = new TextView(this);
-                txtInfo.setText(dress + "\nFor: " + ben + "\nCost: LKR " + price);
+                txtInfo.setText(dress + "\nFor: " + ben + "\nCost: LKR " + price + "\n\nMeasurements:\n" + measurementsText.toString());
                 txtInfo.setTextSize(14);
                 txtInfo.setLayoutParams(new LinearLayout.LayoutParams(0,
                         android.view.ViewGroup.LayoutParams.WRAP_CONTENT, 1));
 
+                LinearLayout btnLayout = new LinearLayout(this);
+                btnLayout.setOrientation(LinearLayout.VERTICAL);
+
+                Button btnMeasure = new Button(this);
+                btnMeasure.setText("Measure");
+                btnMeasure.setTextSize(12);
+                btnMeasure.setOnClickListener(v -> showUpdateMeasurementsDialog(itemId, measurementTemplateId));
+
                 Button btnDel = new Button(this);
-                btnDel.setText("✕");
+                btnDel.setText("✕ Delete");
+                btnDel.setTextSize(12);
                 btnDel.setOnClickListener(v -> deleteOrderItem(itemId));
 
+                btnLayout.addView(btnMeasure);
+                btnLayout.addView(btnDel);
+
                 row.addView(txtInfo);
-                row.addView(btnDel);
+                row.addView(btnLayout);
                 layoutOrderItems.addView(row);
 
             } while (c.moveToNext());
@@ -357,6 +466,90 @@ public class OrderDetailsActivity extends AppCompatActivity {
 
                         loadOrderDetails(); // Refresh the UI
                     }
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void showUpdateMeasurementsDialog(long orderItemId, long measurementTemplateId) {
+        android.database.sqlite.SQLiteDatabase db = dbHandler.getReadableDatabase();
+        Cursor c = db.rawQuery(
+                "SELECT mf.field_id, mf.field_name, om.value, mf.unit " +
+                "FROM MeasurementFields mf " +
+                "LEFT JOIN OrderMeasurements om ON mf.field_id = om.field_id AND om.order_item_id = ? " +
+                "WHERE mf.measurement_template_id = ?",
+                new String[]{String.valueOf(orderItemId), String.valueOf(measurementTemplateId)});
+
+        LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        layout.setPadding(32, 16, 32, 16);
+
+        java.util.List<Long> fieldIds = new java.util.ArrayList<>();
+        java.util.List<android.widget.EditText> inputs = new java.util.ArrayList<>();
+
+        if (c != null && c.moveToFirst()) {
+            do {
+                long fieldId = c.getLong(0);
+                String fieldName = c.getString(1);
+                String unit = c.getString(3);
+                if (unit == null) unit = "";
+
+                TextView lbl = new TextView(this);
+                lbl.setText(fieldName + (unit.isEmpty() ? "" : " (" + unit + ")"));
+                lbl.setPadding(0, 16, 0, 4);
+
+                android.widget.EditText input = new android.widget.EditText(this);
+                input.setInputType(android.text.InputType.TYPE_CLASS_NUMBER | android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL);
+                if (!c.isNull(2)) {
+                    input.setText(String.valueOf(c.getDouble(2)));
+                }
+
+                layout.addView(lbl);
+                layout.addView(input);
+
+                fieldIds.add(fieldId);
+                inputs.add(input);
+            } while (c.moveToNext());
+            c.close();
+        }
+
+        if (fieldIds.isEmpty()) {
+            Toast.makeText(this, "No measurement fields found for this dress template.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        androidx.core.widget.NestedScrollView scroll = new androidx.core.widget.NestedScrollView(this);
+        scroll.addView(layout);
+
+        new android.app.AlertDialog.Builder(this)
+                .setTitle("Update Measurements")
+                .setView(scroll)
+                .setPositiveButton("Save", (dialog, which) -> {
+                    android.database.sqlite.SQLiteDatabase wDb = dbHandler.getWritableDatabase();
+                    for (int i = 0; i < fieldIds.size(); i++) {
+                        String text = inputs.get(i).getText().toString().trim();
+                        if (!text.isEmpty()) {
+                            try {
+                                double val = Double.parseDouble(text);
+                                ContentValues cv = new ContentValues();
+                                cv.put("value", val);
+                                int rows = wDb.update("OrderMeasurements", cv, "order_item_id = ? AND field_id = ?",
+                                        new String[]{String.valueOf(orderItemId), String.valueOf(fieldIds.get(i))});
+                                if (rows == 0) {
+                                    cv.put("order_item_id", orderItemId);
+                                    cv.put("field_id", fieldIds.get(i));
+                                    wDb.insert("OrderMeasurements", null, cv);
+                                }
+                            } catch (NumberFormatException e) {
+                                // Ignore invalid numbers
+                            }
+                        } else {
+                            // If empty, delete the existing record
+                            wDb.delete("OrderMeasurements", "order_item_id = ? AND field_id = ?",
+                                    new String[]{String.valueOf(orderItemId), String.valueOf(fieldIds.get(i))});
+                        }
+                    }
+                    loadOrderDetails();
                 })
                 .setNegativeButton("Cancel", null)
                 .show();

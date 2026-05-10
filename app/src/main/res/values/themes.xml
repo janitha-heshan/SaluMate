@@ -1,5 +1,5 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Luxury Fabric Dark Theme -->
+    <!-- Cyan/Gold Dark Theme -->
     <style name="Base.Theme.SaluMate" parent="Theme.Material3.Dark.NoActionBar">
         <item name="colorPrimary">@color/primary</item>
         <item name="colorOnPrimary">@color/white</item>
@@ -13,6 +13,7 @@
         <item name="android:statusBarColor">@color/background_dark</item>
         <item name="android:navigationBarColor">@color/background_dark</item>
         <item name="android:windowLightStatusBar" tools:targetApi="23">false</item>
+        <item name="android:windowFullscreen">true</item>
 
         <!-- Global text visibility -->
         <item name="android:editTextColor">@color/text_primary</item>
@@ -27,7 +28,7 @@
 
     <style name="Theme.SaluMate" parent="Base.Theme.SaluMate" />
 
-    <!-- Global TextInputLayout: dark background, primary stroke, ivory text -->
+    <!-- Global TextInputLayout: dark background, primary stroke, white text -->
     <style name="SaluMate.TextInputLayout" parent="Widget.Material3.TextInputLayout.OutlinedBox">
         <item name="boxBackgroundColor">@color/background_card</item>
         <item name="boxStrokeColor">@color/primary</item>
@@ -36,7 +37,7 @@
         <item name="editTextColor">@color/text_primary</item>
     </style>
 
-    <!-- Luxury Card base -->
+    <!-- Dark Card base -->
     <style name="LuxuryCard" parent="">
         <item name="android:background">@color/background_card</item>
         <item name="android:layout_marginBottom">12dp</item>

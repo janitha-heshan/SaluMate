@@ -68,21 +68,21 @@ public class OrderAdapter extends BaseAdapter {
                 long diff = dueDate.getTime() - new java.util.Date().getTime();
                 long days = java.util.concurrent.TimeUnit.DAYS.convert(diff, java.util.concurrent.TimeUnit.MILLISECONDS);
                 if (days <= 3 && !"Completed".equalsIgnoreCase(item.get("status"))) {
-                    view.setBackgroundColor(android.graphics.Color.parseColor("#FFEAEA")); // Light red/pink
+                    setCardColor(view, "#4A1A1A"); // Dark red/pink
                 } else if ("Completed".equalsIgnoreCase(item.get("status"))) {
-                    view.setBackgroundColor(android.graphics.Color.parseColor("#E8F5E9")); // Light green
+                    setCardColor(view, "#1A3A22"); // Dark green
                 } else {
-                    view.setBackgroundColor(android.graphics.Color.WHITE);
+                    setCardColor(view, "#1A2123"); // Default card
                 }
             } catch (Exception e) {
-                view.setBackgroundColor(android.graphics.Color.WHITE);
+                setCardColor(view, "#1A2123");
             }
         } else {
             subtitle.setText("Created: " + item.get("created_at") + "  |  Cost: LKR " + item.get("total"));
             if ("Completed".equalsIgnoreCase(item.get("status"))) {
-                view.setBackgroundColor(android.graphics.Color.parseColor("#E8F5E9")); 
+                setCardColor(view, "#1A3A22"); 
             } else {
-                view.setBackgroundColor(android.graphics.Color.WHITE);
+                setCardColor(view, "#1A2123");
             }
         }
 
@@ -115,5 +115,13 @@ public class OrderAdapter extends BaseAdapter {
         });
 
         return view;
+    }
+
+    private void setCardColor(View view, String hexColor) {
+        if (view instanceof com.google.android.material.card.MaterialCardView) {
+            ((com.google.android.material.card.MaterialCardView) view).setCardBackgroundColor(android.graphics.Color.parseColor(hexColor));
+        } else {
+            view.setBackgroundColor(android.graphics.Color.parseColor(hexColor));
+        }
     }
 }

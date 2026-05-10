@@ -97,7 +97,7 @@
                     android:layout_height="130dp"
                     android:layout_marginStart="6dp"
                     android:layout_weight="1"
-                    app:cardBackgroundColor="#1A1A0D"
+                    app:cardBackgroundColor="@color/surface_elevated"
                     app:cardCornerRadius="20dp"
                     app:cardElevation="0dp"
                     app:strokeColor="@color/secondary"

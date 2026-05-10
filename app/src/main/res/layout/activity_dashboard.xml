@@ -135,7 +135,7 @@
                     android:layout_height="110dp"
                     android:layout_marginStart="8dp"
                     android:layout_weight="1"
-                    app:cardBackgroundColor="#231D10"
+                    app:cardBackgroundColor="@color/surface_elevated"
                     app:cardCornerRadius="20dp"
                     app:cardElevation="0dp"
                     app:strokeColor="@color/secondary"
@@ -278,7 +278,7 @@
                     android:layout_weight="1"
                     android:clickable="true"
                     android:focusable="true"
-                    app:cardBackgroundColor="#231D10"
+                    app:cardBackgroundColor="@color/surface_elevated"
                     app:cardCornerRadius="20dp"
                     app:cardElevation="0dp"
                     app:strokeColor="@color/secondary"
@@ -371,8 +371,8 @@
                 android:id="@+id/listViewOrders"
                 android:layout_width="match_parent"
                 android:layout_height="450dp"
-                android:divider="@color/divider"
-                android:dividerHeight="1dp"
+                android:divider="@null"
+                android:dividerHeight="0dp"
                 android:scrollbars="none" />
 
         </LinearLayout>

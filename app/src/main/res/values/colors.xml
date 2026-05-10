@@ -5,46 +5,47 @@
     <color name="white">#FFFFFFFF</color>
 
     <!--
-        Luxury Fabric Palette inspired by premium tailor materials:
-        • Background  → Rich Charcoal (dark wool suiting)
-        • Cards       → Warm Espresso Dark (cashmere)
-        • Primary     → Deep Burgundy Wine (velvet fabric)
-        • Secondary   → Antique Champagne Gold (brocade thread)
-        • Tertiary    → Dusty Rose Mauve (silk blush)
-        • Text        → Ivory Cream (fine linen)
+        Cyan/Gold Dark Theme Palette:
+        • Background  → Dark Slate (#0E1416)
+        • Cards       → Dark Cyan-Tinged Surface (#1A2123)
+        • Primary     → Cyan Accent (#22D3EE)
+        • Secondary   → Gold Highlight (#FBBF24)
+        • Tertiary    → Light Teal (#82EFE0)
+        • Text        → White / Light Gray
     -->
 
     <!-- Backgrounds -->
-    <color name="background_dark">#1A1614</color>      <!-- Warm Charcoal / dark wool -->
-    <color name="background_card">#261E1C</color>      <!-- Espresso cashmere depth -->
-    <color name="background_light">#F5EDD6</color>     <!-- Ivory linen (light mode) -->
-    <color name="surface_elevated">#32251F</color>     <!-- Warm mahogany mid-tone -->
-    <color name="primary_surface">#3D1526</color>      <!-- Deep velvet tint layer -->
+    <color name="background_dark">#0E1416</color>
+    <color name="background_card">#1A2123</color>
+    <color name="background_light">#DDE4E5</color>
+    <color name="surface_elevated">#2F3638</color>
+    <color name="primary_surface">#1A22D3EE</color>
 
-    <!-- Primary: Deep Burgundy Velvet -->
-    <color name="primary">#91203D</color>
-    <color name="primary_dark">#5C0E24</color>
-    <color name="primary_light">#C45975</color>
+    <!-- Primary: Cyan Accent -->
+    <color name="primary">#22D3EE</color>
+    <color name="primary_dark">#0891B2</color>
+    <color name="primary_light">#A5F3FC</color>
 
-    <!-- Secondary: Antique Champagne Gold / Brocade -->
-    <color name="secondary">#C4963A</color>
-    <color name="secondary_dark">#8C6820</color>
-    <color name="secondary_light">#E2C278</color>
+    <!-- Secondary: Gold Highlight -->
+    <color name="secondary">#FBBF24</color>
+    <color name="secondary_dark">#D97706</color>
+    <color name="secondary_light">#FDE68A</color>
 
-    <!-- Tertiary: Silk Blush / Dusty Mauve -->
-    <color name="tertiary">#C08080</color>
+    <!-- Tertiary -->
+    <color name="tertiary">#82EFE0</color>
 
     <!-- Semantic -->
     <color name="success">#4CAF7D</color>
     <color name="error">#CF4444</color>
     <color name="warning">#E6A817</color>
+    <color name="delete">#F37E98</color>
 
-    <!-- Text: Ivory / Cream tones on dark -->
-    <color name="text_primary">#F0E8DC</color>         <!-- Warm ivory cream -->
-    <color name="text_secondary">#A89880</color>       <!-- Aged parchment -->
-    <color name="text_on_primary">#FFFFFF</color>
-    <color name="text_dark">#1A1614</color>
+    <!-- Text: White / Light Gray on dark -->
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#BBC9CD</color>
+    <color name="text_on_primary">#0E1416</color>
+    <color name="text_dark">#0E1416</color>
 
     <!-- Dividers -->
-    <color name="divider">#3A2E28</color>
+    <color name="divider">#343A3C</color>
 </resources>
