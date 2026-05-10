@@ -1,4 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    activity_all_measurement_templates.xml
+    ─────────────────────────────────────
+    Layout for AllMeasurementTemplatesActivity.java
+
+    Purpose:
+        Full CRUD list screen for Measurement Templates.
+        Shows all templates as dynamically-generated MaterialCardViews
+        with a search bar that filters by template name or linked dress name.
+
+    Key Views:
+        - MaterialToolbar                     → Screen title "Measurement Templates"
+        - etSearchTemplates (EditText)         → Real-time search input
+        - btnClearTemplateSearch (ImageButton) → Resets search + reloads list
+        - layoutTemplatesList (LinearLayout)   → Dynamic container; cards are added
+                                                 programmatically in AllMeasurementTemplatesActivity
+        - fabNewTemplate (ExtendedFloatingActionButton) → Opens MeasurementTemplateActivity (create mode)
+
+    Theme:
+        Colours sourced from res/values/colors.xml:
+            background_dark  → screen background
+            background_card  → search card background
+            divider          → search card border
+            text_secondary   → section label, hint text
+            text_primary     → main text
+            primary (cyan)   → FAB background, search icon tint
+
+    Related Files:
+        - Java:   AllMeasurementTemplatesActivity.java
+        - Layout: activity_measurement_template.xml   (create/edit screen opened by FAB & Edit button)
+        - Layout: activity_dashboard.xml              (contains the quick-action card that opens this)
+        - Colors: res/values/colors.xml
+        - Drawable: drawable/search_input_bg.xml      (background shape for the search EditText)
+-->
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -6,6 +40,7 @@
     android:layout_height="match_parent"
     android:background="@color/background_dark">
 
+    <!-- App bar with screen title -->
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -20,6 +55,7 @@
             app:navigationIconTint="@color/white" />
     </com.google.android.material.appbar.AppBarLayout>
 
+    <!-- Main content: section label + search card + scrollable template list -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -28,7 +64,7 @@
         android:paddingBottom="88dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <!-- Section header -->
+        <!-- Section label — matches the "OVERVIEW", "QUICK ACTIONS" labels in the dashboard -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -40,7 +76,10 @@
             android:layout_marginTop="12dp"
             android:layout_marginBottom="8dp" />
 
-        <!-- Search Card -->
+        <!-- Search Card
+             Background: background_card (#1A2123)
+             Border:     divider (#343A3C)
+             Contains: text search input + clear button -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -58,6 +97,10 @@
                 android:gravity="center_vertical"
                 android:padding="12dp">
 
+                <!-- Search input
+                     - Background shape: drawable/search_input_bg.xml (rounded rectangle)
+                     - Triggers AllMeasurementTemplatesActivity.loadTemplates() via TextWatcher
+                     - Filters MeasurementTemplates.template_name AND DressTemplates.dress_name -->
                 <EditText
                     android:id="@+id/etSearchTemplates"
                     android:layout_width="0dp"
@@ -74,6 +117,7 @@
                     android:inputType="text"
                     android:singleLine="true" />
 
+                <!-- Clear button — resets etSearchTemplates text and searchQuery in Activity -->
                 <ImageButton
                     android:id="@+id/btnClearTemplateSearch"
                     android:layout_width="40dp"
@@ -86,12 +130,17 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Templates list (populated dynamically) -->
+        <!-- Scrollable template list
+             AllMeasurementTemplatesActivity.addTemplateCard() dynamically inflates
+             MaterialCardViews and appends them to layoutTemplatesList.
+             NestedScrollView is used to allow this content to scroll independently
+             while keeping the FAB always visible at the bottom. -->
         <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1">
 
+            <!-- Dynamic card container — populated at runtime by AllMeasurementTemplatesActivity -->
             <LinearLayout
                 android:id="@+id/layoutTemplatesList"
                 android:layout_width="match_parent"
@@ -101,7 +150,10 @@
 
     </LinearLayout>
 
-    <!-- FAB: New Template -->
+    <!-- Floating Action Button — "New Template"
+         Opens MeasurementTemplateActivity with no Intent extras (create mode).
+         Cyan (@color/primary) background with dark text (@color/text_on_primary).
+         Positioned at bottom-end corner, always above the scrollable content. -->
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/fabNewTemplate"
         android:layout_width="wrap_content"

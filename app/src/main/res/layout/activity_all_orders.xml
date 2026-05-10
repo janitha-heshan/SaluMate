@@ -1,4 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    activity_all_orders.xml
+    ───────────────────────
+    Layout for AllOrdersActivity.java
+
+    Purpose:
+        Displays the complete order history with real-time filtering support.
+        Filters include:
+          1. Text search by customer name or contact number
+          2. Date range (From Date / To Date) by order creation date
+
+    Key Views:
+        - MaterialToolbar              → "All Orders" screen title
+        - etSearchOrders (EditText)    → Text filter; triggers loadOrders() via TextWatcher
+        - btnClearFilters (ImageButton)→ Resets all active filters
+        - btnStartDate (MaterialButton)→ Opens DatePickerDialog for "From Date" bound
+        - btnEndDate (MaterialButton)  → Opens DatePickerDialog for "To Date" bound
+        - listOrders (ListView)        → Displays filtered orders via OrderAdapter.java
+        - btn_BackToDashboard          → Calls finish() to return to DashboardActivity
+        - btn_NewOrder                 → Opens CreateOrderActivity
+
+    Theme:
+        Colours from res/values/colors.xml:
+            background_dark  → screen background
+            background_card  → filter card background
+            divider          → filter card border + date button borders
+            text_primary     → search text
+            text_secondary   → section label, hint text
+            primary (cyan)   → "New Order" button background
+
+    Related Files:
+        - Java:    AllOrdersActivity.java
+        - Adapter: OrderAdapter.java            (renders individual list rows)
+        - Target:  OrderDetailsActivity.java    (opened when a list row is tapped)
+        - Source:  DashboardActivity.java       (navigates here via addCustomer card)
+        - Drawable: drawable/search_input_bg.xml (rounded input background shape)
+        - Colors:   res/values/colors.xml
+-->
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -6,6 +44,7 @@
     android:layout_height="match_parent"
     android:background="@color/background_dark">
 
+    <!-- App bar with screen title -->
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -28,7 +67,7 @@
         android:paddingBottom="16dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <!-- Section Header -->
+        <!-- Section label — consistent with "OVERVIEW" / "QUICK ACTIONS" style in dashboard -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -40,7 +79,10 @@
             android:layout_marginTop="12dp"
             android:layout_marginBottom="8dp" />
 
-        <!-- Search Card -->
+        <!-- Filter Card
+             Wraps the search bar and the date range row.
+             AllOrdersActivity reads etSearchOrders via TextWatcher and
+             btnStartDate/btnEndDate via DatePickerDialog callbacks. -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -57,13 +99,17 @@
                 android:orientation="vertical"
                 android:padding="12dp">
 
-                <!-- Search Input Row -->
+                <!-- Row 1: Text search + Clear button -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical">
 
+                    <!-- Text search input
+                         Searches Customers.name and Customers.phone_number
+                         via a LEFT JOIN in AllOrdersActivity.loadOrders().
+                         Uses drawable/search_input_bg.xml as the background shape. -->
                     <EditText
                         android:id="@+id/etSearchOrders"
                         android:layout_width="0dp"
@@ -80,6 +126,7 @@
                         android:inputType="text"
                         android:singleLine="true" />
 
+                    <!-- Clear button — resets etSearchOrders, startDate, endDate and reloads -->
                     <ImageButton
                         android:id="@+id/btnClearFilters"
                         android:layout_width="40dp"
@@ -91,13 +138,17 @@
                         android:contentDescription="Clear filters" />
                 </LinearLayout>
 
-                <!-- Date Range Row -->
+                <!-- Row 2: Date range pickers
+                     Both buttons open AllOrdersActivity.showDatePicker() — a native DatePickerDialog.
+                     Dates are stored in ISO format (YYYY-MM-DD) and compared using DATE() in SQLite.
+                     Guard logic prevents startDate > endDate scenarios. -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:layout_marginTop="8dp">
 
+                    <!-- "From Date" — lower bound: DATE(o.created_at) >= startDate -->
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnStartDate"
                         style="@style/Widget.Material3.Button.OutlinedButton"
@@ -109,6 +160,7 @@
                         android:textSize="12sp"
                         app:strokeColor="@color/divider" />
 
+                    <!-- "To Date" — upper bound: DATE(o.created_at) <= endDate -->
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnEndDate"
                         style="@style/Widget.Material3.Button.OutlinedButton"
@@ -124,7 +176,10 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Orders List -->
+        <!-- Orders list
+             Bound to AllOrdersActivity.orderList via OrderAdapter.
+             layout_weight="1" makes this fill all remaining vertical space.
+             Tapping a row opens OrderDetailsActivity with the selected order_id. -->
         <ListView
             android:id="@+id/listOrders"
             android:layout_width="match_parent"
@@ -133,7 +188,7 @@
             android:divider="@null"
             android:dividerHeight="0dp" />
 
-        <!-- Bottom Buttons -->
+        <!-- Bottom action bar: Back + New Order -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -141,6 +196,7 @@
             android:orientation="horizontal"
             android:layout_marginTop="16dp">
 
+            <!-- Back — calls finish(), returns to DashboardActivity -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_BackToDashboard"
                 style="@style/Widget.Material3.Button.TextButton"
@@ -150,6 +206,9 @@
                 android:text="Back"
                 android:textColor="@color/text_secondary" />
 
+            <!-- New Order — opens CreateOrderActivity (4-step wizard)
+                 After order creation, CreateOrderActivity automatically redirects
+                 to OrderDetailsActivity for the newly created order. -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_NewOrder"
                 android:layout_width="wrap_content"
