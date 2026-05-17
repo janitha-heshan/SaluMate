@@ -1,22 +1,37 @@
 package com.university.salumate;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.location.Address;
+import android.location.Geocoder;
 import android.os.Bundle;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.material.textfield.TextInputEditText;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Locale;
 
 /**
  * UpdateCustomerActivity — Edit form for modifying an existing customer record.
@@ -26,40 +41,39 @@ import com.google.android.gms.maps.model.MarkerOptions;
  * stored geo-location pin. Also displays the customer's beneficiary list with
  * the ability to add new beneficiaries or delete existing ones.</p>
  *
- * <h3>Navigation</h3>
+ * <h3>Map Features</h3>
  * <ul>
- *   <li><b>Back / Save</b>: Saves changes and closes this activity (returns to list).</li>
- *   <li><b>Confirm / Dashboard</b>: Returns to the main Dashboard without explicitly
- *       saving — note that this button currently does NOT save changes first; the user
- *       should use the "Back" button to save.</li>
+ *   <li><b>Stored Location</b>: Camera centres on the customer's saved lat/lng on open.</li>
+ *   <li><b>Address Search</b>: 🔍 button geocodes an address and drops a new pin.</li>
+ *   <li><b>My Location</b>: 📍 button re-centres the camera on the device's current GPS.</li>
+ *   <li><b>Map Tap</b>: User can tap any point to re-pin the customer's location.</li>
  * </ul>
  *
  * <p>Required intent extra: {@code customer_id} (long)</p>
  */
 public class UpdateCustomerActivity extends AppCompatActivity {
 
-    /** Input fields for editing the customer's name, phone, and address. */
+    private static final int LOCATION_PERMISSION_REQUEST = 102;
+    private static final float DEFAULT_ZOOM = 15f;
+
+    // Form fields
     private EditText nameField, phoneField, addressField;
 
-    /** Embedded map view for displaying and updating the customer's location pin. */
+    // Map
     private MapView mapView;
-
-    /** Live GoogleMap instance, initialised asynchronously. */
     private GoogleMap gMap;
-
-    /**
-     * The currently selected GPS pin, updated whenever the user taps the map.
-     * Pre-populated from the database when the activity first loads.
-     */
     private LatLng customerLocation;
 
-    /** The customer_id of the record being edited, passed via intent extra. */
+    // Location search
+    private TextInputEditText etLocationSearch;
+    private TextView txtLocationStatus;
+
+    // Location provider
+    private FusedLocationProviderClient fusedLocationClient;
+
+    // Data
     private long customerId;
-
-    /** Database access helper for all read/write operations. */
     private DBHandler dbHandler;
-
-    /** LinearLayout where beneficiary rows are dynamically inflated. */
     private LinearLayout layoutBeneficiaries;
 
     @Override
@@ -67,87 +81,208 @@ public class UpdateCustomerActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_update_customer);
 
-        // Bind form field views
-        nameField    = findViewById(R.id.CustomerName);
-        phoneField   = findViewById(R.id.editTextPhone);
-        addressField = findViewById(R.id.editTextAddress);
-        mapView      = findViewById(R.id.mapView);
-        dbHandler    = new DBHandler(this);
+        nameField        = findViewById(R.id.CustomerName);
+        phoneField       = findViewById(R.id.editTextPhone);
+        addressField     = findViewById(R.id.editTextAddress);
+        mapView          = findViewById(R.id.mapView);
+        etLocationSearch = findViewById(R.id.etLocationSearch);
+        txtLocationStatus= findViewById(R.id.txtLocationStatus);
+        dbHandler        = new DBHandler(this);
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
-        // Retrieve the customer ID passed from the CustomerAdapter's edit action
-        customerId        = getIntent().getLongExtra("customer_id", -1);
+        customerId          = getIntent().getLongExtra("customer_id", -1);
         layoutBeneficiaries = findViewById(R.id.layoutBeneficiaries);
 
-        // Initialise the MapView lifecycle before async map loading
-        mapView.onCreate(savedInstanceState);
-
-        // Load customer data immediately to pre-fill the form fields
+        // Load customer data to pre-fill form (sets customerLocation from DB)
         if (customerId != -1) {
             loadCustomerData(customerId);
         }
 
-        // Set up the map once it's ready
+        // Initialise MapView
+        mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(googleMap -> {
             gMap = googleMap;
 
-            // If a saved location exists, centre the map on it with a marker
-            if (customerLocation != null) {
-                gMap.moveCamera(CameraUpdateFactory.newLatLngZoom(customerLocation, 15));
-                gMap.addMarker(new MarkerOptions()
-                        .position(customerLocation)
-                        .title("Current Location"));
+            // Enable My Location blue dot if permission granted
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                    == PackageManager.PERMISSION_GRANTED) {
+                gMap.setMyLocationEnabled(true);
             }
 
-            // Allow the user to re-pin the location by tapping the map
+            // Centre on stored location (if valid) or current device location
+            if (customerLocation != null
+                    && (customerLocation.latitude != 0 || customerLocation.longitude != 0)) {
+                gMap.moveCamera(CameraUpdateFactory.newLatLngZoom(customerLocation, DEFAULT_ZOOM));
+                gMap.addMarker(new MarkerOptions()
+                        .position(customerLocation)
+                        .title("Stored Location"));
+                updateStatusLabel(customerLocation, null);
+            } else {
+                // No stored location — centre on current device GPS as a helpful default
+                moveToCurrentLocation(true);
+                txtLocationStatus.setText("Tap map to update pin · or search above");
+            }
+
+            // Tap map → update pin
             gMap.setOnMapClickListener(latLng -> {
-                customerLocation = latLng; // Update the in-memory location
+                customerLocation = latLng;
                 gMap.clear();
-                gMap.addMarker(new MarkerOptions().position(latLng).title("Updated Location"));
+                gMap.addMarker(new MarkerOptions()
+                        .position(latLng)
+                        .title("Updated Location"));
+                updateStatusLabel(latLng, null);
             });
         });
 
-        // "Save & Back" button: persists changes then closes this activity
+        // 🔍 Search button
+        findViewById(R.id.btnSearchLocation).setOnClickListener(v -> searchLocation());
+
+        // 📍 My Location button
+        findViewById(R.id.btnMyLocation).setOnClickListener(v -> moveToCurrentLocation(false));
+
+        // Keyboard "Search" action
+        etLocationSearch.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                searchLocation();
+                return true;
+            }
+            return false;
+        });
+
+        // "Save & Back" — persist changes and close
         findViewById(R.id.btn_BackDress).setOnClickListener(v -> {
             updateCustomerData();
             finish();
         });
 
-        // "Go to Dashboard" button: navigates to Dashboard (clears the back-stack)
-        // NOTE: Does NOT save form changes. User should press "Save & Back" to persist.
+        // "Go to Dashboard" — navigate without saving
         findViewById(R.id.btn_ConfirmDress).setOnClickListener(v -> {
             Intent i = new Intent(UpdateCustomerActivity.this, DashboardActivity.class);
             i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(i);
         });
 
-        // "Add Beneficiary" button: opens BeneficiaryActivity in standalone mode
-        // (user returns here after saving the beneficiary via onResume reload)
+        // "Add Beneficiary" — open BeneficiaryActivity for this customer
         findViewById(R.id.btnAddBeneficiary).setOnClickListener(v -> {
             Intent intent = new Intent(UpdateCustomerActivity.this, BeneficiaryActivity.class);
             intent.putExtra("customer_id", customerId);
             intent.putExtra("standalone", true);
             startActivity(intent);
         });
-    }
 
-    /**
-     * Refreshes the MapView and re-loads beneficiaries so that any beneficiary
-     * added in {@link BeneficiaryActivity} is immediately visible on return.
-     */
-    @Override
-    protected void onResume() {
-        super.onResume();
-        mapView.onResume();
-        if (customerId != -1) {
-            loadBeneficiaries(); // Refresh list after potential add from BeneficiaryActivity
+        // Request permission if not yet granted
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
+                                 Manifest.permission.ACCESS_COARSE_LOCATION},
+                    LOCATION_PERMISSION_REQUEST);
         }
     }
 
+    // ─── Location Helpers ─────────────────────────────────────────────────────
+
+    /**
+     * Moves the camera to the device's last known location.
+     * @param isDefault {@code true} when called as a silent default (no toast).
+     */
+    private void moveToCurrentLocation(boolean isDefault) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            if (!isDefault) {
+                Toast.makeText(this, "Location permission not granted.", Toast.LENGTH_SHORT).show();
+            }
+            return;
+        }
+
+        fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
+            if (location != null && gMap != null) {
+                LatLng current = new LatLng(location.getLatitude(), location.getLongitude());
+                gMap.animateCamera(CameraUpdateFactory.newLatLngZoom(current, DEFAULT_ZOOM));
+                if (!isDefault) {
+                    Toast.makeText(this, "Centred on your current location.", Toast.LENGTH_SHORT).show();
+                }
+            } else if (!isDefault) {
+                Toast.makeText(this, "Unable to get current location.", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    /**
+     * Geocodes the address in {@code etLocationSearch} and moves the camera/pin there.
+     */
+    private void searchLocation() {
+        String query = etLocationSearch.getText() != null
+                ? etLocationSearch.getText().toString().trim() : "";
+        if (query.isEmpty()) {
+            Toast.makeText(this, "Enter an address or place name to search.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+        if (imm != null) imm.hideSoftInputFromWindow(etLocationSearch.getWindowToken(), 0);
+
+        Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+        try {
+            List<Address> results = geocoder.getFromLocationName(query, 5);
+            if (results != null && !results.isEmpty()) {
+                Address best = results.get(0);
+                LatLng found = new LatLng(best.getLatitude(), best.getLongitude());
+
+                if (gMap != null) {
+                    gMap.clear();
+                    gMap.animateCamera(CameraUpdateFactory.newLatLngZoom(found, DEFAULT_ZOOM));
+                    gMap.addMarker(new MarkerOptions()
+                            .position(found)
+                            .title(best.getFeatureName() != null ? best.getFeatureName() : query));
+                }
+
+                customerLocation = found;
+                updateStatusLabel(found, best.getAddressLine(0));
+            } else {
+                Toast.makeText(this, "Location not found. Try a different search.", Toast.LENGTH_SHORT).show();
+            }
+        } catch (IOException e) {
+            Toast.makeText(this, "Search failed — check your internet connection.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /** Updates the status label with formatted coordinates and optional address line. */
+    private void updateStatusLabel(LatLng latLng, String addressLine) {
+        String coords = String.format(Locale.getDefault(),
+                "📍 %.5f, %.5f", latLng.latitude, latLng.longitude);
+        if (addressLine != null && !addressLine.isEmpty()) {
+            txtLocationStatus.setText(addressLine + "\n" + coords);
+        } else {
+            txtLocationStatus.setText(coords);
+        }
+    }
+
+    // ─── Permission Result ────────────────────────────────────────────────────
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == LOCATION_PERMISSION_REQUEST
+                && grantResults.length > 0
+                && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            if (gMap != null) {
+                try { gMap.setMyLocationEnabled(true); } catch (SecurityException ignored) {}
+                // Only move to current location if no stored pin was set
+                if (customerLocation == null
+                        || (customerLocation.latitude == 0 && customerLocation.longitude == 0)) {
+                    moveToCurrentLocation(true);
+                }
+            }
+        }
+    }
+
+    // ─── Data Loading ─────────────────────────────────────────────────────────
+
     /**
      * Queries the database for the specified customer's current data and
-     * pre-fills the form fields and map pin accordingly.
-     *
-     * @param id The customer_id whose data should be loaded.
+     * pre-fills the form fields and sets {@code customerLocation} from stored GPS.
      */
     private void loadCustomerData(long id) {
         Cursor cursor = dbHandler.getCustomerById(id);
@@ -156,13 +291,12 @@ public class UpdateCustomerActivity extends AppCompatActivity {
             phoneField.setText(cursor.getString(cursor.getColumnIndexOrThrow("phone_number")));
             addressField.setText(cursor.getString(cursor.getColumnIndexOrThrow("address")));
 
-            // Load stored GPS coordinates for the initial map marker
             double lat = cursor.getDouble(cursor.getColumnIndexOrThrow("latitude"));
             double lng = cursor.getDouble(cursor.getColumnIndexOrThrow("longitude"));
             customerLocation = new LatLng(lat, lng);
 
             cursor.close();
-            loadBeneficiaries(); // Also load the beneficiary list on initial data load
+            loadBeneficiaries();
         }
     }
 
@@ -172,7 +306,7 @@ public class UpdateCustomerActivity extends AppCompatActivity {
      * delete button that removes the record immediately on tap.
      */
     private void loadBeneficiaries() {
-        layoutBeneficiaries.removeAllViews(); // Clear before re-populating
+        layoutBeneficiaries.removeAllViews();
 
         Cursor cur = dbHandler.getReadableDatabase().rawQuery(
                 "SELECT beneficiary_id, name, gender, relation " +
@@ -183,10 +317,8 @@ public class UpdateCustomerActivity extends AppCompatActivity {
             do {
                 long   bId   = cur.getLong(0);
                 String bName = cur.getString(1);
-                // gender (index 2) not displayed here but available if needed
                 String bRel  = cur.getString(3);
 
-                // Build a horizontal row: name label on left, delete button on right
                 LinearLayout row = new LinearLayout(this);
                 row.setOrientation(LinearLayout.HORIZONTAL);
                 row.setLayoutParams(new LinearLayout.LayoutParams(
@@ -197,12 +329,11 @@ public class UpdateCustomerActivity extends AppCompatActivity {
                 txtInfo.setText(bName + " (" + bRel + ")");
                 txtInfo.setTextSize(16);
                 txtInfo.setLayoutParams(new LinearLayout.LayoutParams(
-                        0, ViewGroup.LayoutParams.WRAP_CONTENT, 1)); // Fill remaining width
+                        0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
 
                 Button btnDel = new Button(this);
                 btnDel.setText("✕");
                 btnDel.setOnClickListener(v -> {
-                    // Delete the beneficiary and refresh the list
                     dbHandler.getWritableDatabase().execSQL(
                             "DELETE FROM Beneficiaries WHERE beneficiary_id = ?",
                             new String[]{String.valueOf(bId)});
@@ -221,14 +352,12 @@ public class UpdateCustomerActivity extends AppCompatActivity {
     /**
      * Reads the current form values and the map pin location, then calls
      * {@link DBHandler#updateCustomer} to persist the changes to the database.
-     * Defaults lat/lng to 0,0 if the user has not set a map pin.
      */
     private void updateCustomerData() {
         String name    = nameField.getText().toString().trim();
         String phone   = phoneField.getText().toString().trim();
         String address = addressField.getText().toString().trim();
 
-        // Default to (0, 0) if no map pin has been selected
         double lat = customerLocation != null ? customerLocation.latitude  : 0;
         double lng = customerLocation != null ? customerLocation.longitude : 0;
 
@@ -238,11 +367,16 @@ public class UpdateCustomerActivity extends AppCompatActivity {
                 Toast.LENGTH_SHORT).show();
     }
 
-    // ─── MapView Lifecycle Pass-through Methods ───────────────────────────────
+    // ─── MapView Lifecycle Pass-through ───────────────────────────────────────
 
-    /** Forward to MapView to prevent memory leaks and ensure correct rendering. */
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mapView.onResume();
+        if (customerId != -1) loadBeneficiaries();
+    }
+
+    @Override protected void onPause()   { super.onPause();   mapView.onPause();   }
     @Override protected void onDestroy() { super.onDestroy(); mapView.onDestroy(); }
-
-    /** Forward low-memory signals to MapView so it can release tile caches. */
     @Override public void onLowMemory() { super.onLowMemory(); mapView.onLowMemory(); }
 }

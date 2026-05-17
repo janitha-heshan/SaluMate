@@ -70,9 +70,15 @@ public class DashboardActivity extends AppCompatActivity {
 
         // "Measurement Templates" quick-action tile
         View btnTemplates = findViewById(R.id.btn_MeasurementTemplates);
-        btnTemplates.setOnClickListener(v -> {
-            startActivity(new Intent(DashboardActivity.this, AllMeasurementTemplatesActivity.class));
-        });
+        btnTemplates.setOnClickListener(v ->
+                startActivity(new Intent(DashboardActivity.this, AllMeasurementTemplatesActivity.class)));
+
+        // Settings icon — top-right in header
+        View btnSettings = findViewById(R.id.btnSettings);
+        if (btnSettings != null) {
+            btnSettings.setOnClickListener(v ->
+                    startActivity(new Intent(DashboardActivity.this, SettingsActivity.class)));
+        }
     }
 
     /**
